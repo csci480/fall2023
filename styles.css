@@ -38,8 +38,17 @@ th .fa-filter {
     border-radius: 20px;
     font-size: 0.8em;
 }
+
 th .fa-filter:hover {
     background: #DDD;
+} 
+
+th .fa-filter.active {
+    background:rgb(230, 36, 133);
+    color: white;
+}
+th .fa-filter.active:hover {
+    background: hotpink;
 } 
 
 .tag {

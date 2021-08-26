@@ -17,6 +17,7 @@ const state = {
     filteredRows: [],
     columns: {
         'category': {
+            name: 'Category',
             data_type: 'string',
             values: [],
             filters: [],
@@ -25,17 +26,20 @@ const state = {
             colWidth: '200px'
         },
         'description': {
+            name: 'Description',
             data_type: 'string',
             values: [],
             filterable: false,
             sortable: true
         },
         'tags': {
+            name: 'Tags',
             data_type: 'list',
             values: [],
             filters: [],
             filterable: true,
-            sortable: false
+            sortable: false,
+            colWidth: '250px'
         }
     }
 };
@@ -49,7 +53,40 @@ fetch(url)
         state.columns.tags.filters = [...state.columns.tags.values];
         console.log(state);
         renderTable();
+        document.body.onclick = hideFilterMenus;
     });
+
+const buildTableHeaderRow = () => {
+    const ths = [];
+    
+    for (let key in state.columns){ 
+        const col = state.columns[key];
+        let colNameElement = `<span>${col.name}</span>`;
+        let colFilterElement = '';
+        
+        if (col.sortable) {
+            colNameElement = `<a href="#" data-key="${key}"
+                class="sort ${state.sortDirection} ${(state.sortColumn === key) ? 'active' : ''}" >
+                    ${col.name}
+                </a>`;
+        }
+        if (col.filterable) {
+            let extraClasses = '';
+            if (col.filters.length != col.values.length) {
+                extraClasses = 'active';
+            }
+            colFilterElement = `<i class="fa fa-filter ${extraClasses}" data-key="${key}"></i>`
+        }
+
+        ths.push(`
+            <th id="th-${key}" style="width: ${col.colWidth ? col.colWidth : 'auto'};">
+                ${colNameElement}
+                ${colFilterElement}
+            </th>
+        `);
+    };
+    return `<tr>${ths.join('')}</tr>`;
+};
 
 const rowsToTable = rows => {
     const tableRows = [];
@@ -68,21 +105,10 @@ const rowsToTable = rows => {
             </tr>
         `);
     });
+    const headerRow = buildTableHeaderRow();
     return `
         <table>
-            <tr>
-                <th id="th-category">
-                    <a href="#" class="sort ${state.sortDirection} ${(state.sortColumn === 'category') ? 'active' : ''}" data-key="category">Category</a>
-                    <i class="fa fa-filter" data-key="category"></i>
-                </th>
-                <th id="th-description">
-                    <a href="#" class="sort ${state.sortDirection} ${(state.sortColumn === 'description') ? 'active' : ''}" data-key="description">Link</a>
-                </th>
-                <th id="th-tags">
-                    <span>Tags</span>
-                    <i class="fa fa-filter" data-key="tags"></i>
-                </th>
-            </tr>
+            ${headerRow}
             ${tableRows.join('')}
         </table>`;
 };
@@ -201,18 +227,19 @@ const showFilterBox = ev => {
     const id = elem.getAttribute('data-key');
     let div = document.getElementById(`filter-${id}`);
     if (div) {
-        div.remove();
-        document.querySelectorAll(`div[id^=filter-]`).forEach(div => {
-            div.remove();
-        });
-
+        hideFilterMenus();
     } else {
-        document.querySelectorAll(`div[id^=filter-]`).forEach(div => {
-            div.remove();
-        });
+        hideFilterMenus();
         renderFilterBox(id)
     }
     ev.preventDefault();
+    ev.stopPropagation();
+};
+
+const hideFilterMenus = () => {
+    document.querySelectorAll(`div[id^=filter-]`).forEach(div => {
+        div.remove();
+    });
 };
 
 const renderFilterBox = (id) => {
@@ -236,11 +263,16 @@ const renderFilterBox = (id) => {
             style="width: ${w}px; top: ${y}px; left: ${x}px;">
                 ${batchButton}<br><br>
                 ${cbList.join('')}
+                <br>
+                dasdsada
         </div>`;
     document.body.insertAdjacentHTML('beforeend', div);
     document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
         cb.onclick = updateFilterAndRedraw;
     });
+    document.getElementById(`filter-${id}`).onclick = ev => {
+        ev.stopPropagation();
+    }
     if (batchOption === 'deselect') {
         document.querySelector(`#filter-${id}-deselect`).onclick = ev => {
             document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
@@ -278,6 +310,7 @@ const updateFilterAndRedraw = ev => {
     // redraw filter box
     document.getElementById(`filter-${col}`).remove();
     renderFilterBox(col);
+    ev.stopPropagation();
 };
 
 const renderTable = () => {
