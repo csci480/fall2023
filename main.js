@@ -14,10 +14,12 @@ const state = {
     sortColumn: 'category',
     sortDirection: 'asc',
     rows: [],
+    filteredRows: [],
     columns: {
         'category': {
             data_type: 'string',
             values: [],
+            filters: [],
             filterable: true,
             sortable: true
         },
@@ -30,6 +32,7 @@ const state = {
         'tags': {
             data_type: 'list',
             values: [],
+            filters: [],
             filterable: true,
             sortable: false
         }
@@ -40,7 +43,9 @@ fetch(url)
     .then(data => {
         state.rows = processData(data);
         state.columns['category'].values = getDistinctValues(state.rows, 'category');
+        state.columns['category'].filters = [...state.columns['category'].values];
         state.columns['tags'].values = getDistinctValues(state.rows, 'tags');
+        state.columns['tags'].filters = [...state.columns['tags'].values];
         console.log(state);
         renderTable();
     });
@@ -84,11 +89,37 @@ const rowsToTable = rows => {
 const sortByColumn = () => {
     const key = state.sortColumn,
         direction = state.sortDirection,
-        data = state.rows;
+        data = state.filteredRows || state.rows;
     const multiplier = direction === 'desc' ? -1 : 1;
-    state.rows = data.sort((a, b) => {
+    data.sort((a, b) => {
         const comparison = a[key].localeCompare(b[key]) * multiplier;
         return comparison;
+    });
+};
+
+const filterData = () => {
+    const rows = JSON.parse(JSON.stringify(state.rows));
+    const categoryFilters = state.columns.category.filters;
+    const tagFilters = state.columns.tags.filters;
+
+    if (categoryFilters.length + tagFilters.length === 0) {
+        state.filteredRows = null;
+    }
+
+    state.filteredRows = []
+    rows.forEach(row => {
+        const categoryMatch = (
+            categoryFilters.length === state.columns.category.values.length || 
+            categoryFilters.includes(row.category)
+        );
+        const tagMatch = (
+            tagFilters.length === state.columns.tags.values.length || 
+            tagFilters.some(a => row.tags.includes(a))
+        );
+        // console.log(categoryMatch, tagMatch, row.category, row.tags)
+        if (categoryMatch && tagMatch) {
+            state.filteredRows.push(row)
+        }
     });
 };
 
@@ -170,27 +201,50 @@ const showFilterBox = ev => {
     let div = document.getElementById(`filter-${id}`);
     
     if (div) {
-        div.classList.toggle('hidden');
+        div.remove();
     } else {
         const parent = elem.parentElement;
         const w = parent.offsetWidth + 2;
-        console.log(window.scrollY);
         const y = parent.getBoundingClientRect().top + window.scrollY + parent.offsetHeight - 2;
         const x = parent.getBoundingClientRect().left;
-        const innerHTML = state.columns[id].values.join('<br><input type="checkbox" checked>');
+        let cbList = [];
+        state.columns[id].values.forEach(option => {
+            cbList.push(`<input type="checkbox" value="${option}"
+                ${state.columns[id].filters.includes(option) ? 'checked' : ''}>
+                ${option}<br>`);
+        });
         const div = `
             <div class="box" id="filter-${id}"
                 style="width: ${w}px; top: ${y}px; left: ${x}px;">
-                    <input type="checkbox" checked>${innerHTML}
+                    ${cbList.join('')}
             </div>`;
         document.body.insertAdjacentHTML('beforeend', div);
+        document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
+            cb.onclick = updateFilterAndRedraw;
+        });
     }
     ev.preventDefault();
 };
 
+const updateFilterAndRedraw = ev => {
+    const elem = ev.currentTarget;
+    const id = elem.parentElement.id;
+    const col = id.split('-')[1];
+    state.columns[col].filters = [];
+    document.querySelectorAll(`#${id} input`).forEach(cb => {
+        if(cb.checked) {
+            state.columns[col].filters.push(cb.value);
+        }
+    });
+    // console.log(state);
+    document.querySelector('table').remove();
+    renderTable();
+};
+
 const renderTable = () => {
+    filterData();
     sortByColumn();
-    const tableHTML = rowsToTable(state.rows);
+    const tableHTML = rowsToTable(state.filteredRows || state.rows);
     document.body.insertAdjacentHTML('beforeend', tableHTML);
     attachEventHandlers();
 };
