@@ -88,8 +88,8 @@ const rowsToTable = rows => {
     const headerRow = buildTableHeaderRow();
     return `
         <table>
-            ${headerRow}
-            ${tableRows.join('')}
+            <thead>${headerRow}</thead>
+            <tbody>${tableRows.join('')}</tbody>
         </table>`;
 };
 
