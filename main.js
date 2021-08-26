@@ -1,14 +1,6 @@
 // This works:
-// https://stackoverflow.com/questions/46583052/http-google-sheets-api-v4-how-to-access-without-oauth-2-0
-
+// https://stackoverflow.com/questions/46583052/http-google-sheets-api-v4-how-to-access-without-oauth-2-
 // Note: ensure that your Google Sheets "Share" setting is Public Read-only.
-if (!key) {
-    alert('please define a variable called key that has your Google API key');
-}
-if (!sheetsId) {
-    alert('please define a variable called sheetsId that has your Google sheets ID');
-}
-const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetsId}/values/Sheet1?key=${key}`;
 
 const state = {
     sortColumn: 'category',
@@ -43,18 +35,6 @@ const state = {
         }
     }
 };
-fetch(url)
-    .then(response => response.json())
-    .then(data => {
-        state.rows = processData(data);
-        state.columns.category.values = getDistinctValues(state.rows, 'category');
-        state.columns.category.filters = [...state.columns.category.values];
-        state.columns.tags.values = getDistinctValues(state.rows, 'tags');
-        state.columns.tags.filters = [...state.columns.tags.values];
-        console.log(state);
-        renderTable();
-        document.body.onclick = hideFilterMenus;
-    });
 
 const buildTableHeaderRow = () => {
     const ths = [];
@@ -316,7 +296,31 @@ const updateFilterAndRedraw = ev => {
 const renderTable = () => {
     filterData();
     sortByColumn();
-    const tableHTML = rowsToTable(state.filteredRows || state.rows);
-    document.body.insertAdjacentHTML('beforeend', tableHTML);
+    document.body.insertAdjacentHTML('beforeend', rowsToTable(state.filteredRows || state.rows));
     attachEventHandlers();
 };
+
+const init = () => {
+    if (!key) {
+        alert('please define a variable called key that has your Google API key');
+    }
+    if (!sheetsId) {
+        alert('please define a variable called sheetsId that has your Google sheets ID');
+    }
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetsId}/values/Sheet1?key=${key}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            state.rows = processData(data);
+            state.columns.category.values = getDistinctValues(state.rows, 'category');
+            state.columns.category.filters = [...state.columns.category.values];
+            state.columns.tags.values = getDistinctValues(state.rows, 'tags');
+            state.columns.tags.filters = [...state.columns.tags.values];
+            console.log(state);
+            renderTable();
+            document.body.onclick = hideFilterMenus;
+        });
+};
+
+init();
