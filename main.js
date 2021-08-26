@@ -21,7 +21,8 @@ const state = {
             values: [],
             filters: [],
             filterable: true,
-            sortable: true
+            sortable: true,
+            colWidth: '200px'
         },
         'description': {
             data_type: 'string',
@@ -42,10 +43,10 @@ fetch(url)
     .then(response => response.json())
     .then(data => {
         state.rows = processData(data);
-        state.columns['category'].values = getDistinctValues(state.rows, 'category');
-        state.columns['category'].filters = [...state.columns['category'].values];
-        state.columns['tags'].values = getDistinctValues(state.rows, 'tags');
-        state.columns['tags'].filters = [...state.columns['tags'].values];
+        state.columns.category.values = getDistinctValues(state.rows, 'category');
+        state.columns.category.filters = [...state.columns.category.values];
+        state.columns.tags.values = getDistinctValues(state.rows, 'tags');
+        state.columns.tags.filters = [...state.columns.tags.values];
         console.log(state);
         renderTable();
     });
@@ -199,10 +200,16 @@ const showFilterBox = ev => {
     const elem = ev.currentTarget;
     const id = elem.getAttribute('data-key');
     let div = document.getElementById(`filter-${id}`);
-    
     if (div) {
         div.remove();
+        document.querySelectorAll(`div[id^=filter-]`).forEach(div => {
+            div.remove();
+        });
+
     } else {
+        document.querySelectorAll(`div[id^=filter-]`).forEach(div => {
+            div.remove();
+        });
         renderFilterBox(id)
     }
     ev.preventDefault();
@@ -240,8 +247,6 @@ const renderFilterBox = (id) => {
                 cb.checked = false;
             });
             updateFilterAndRedraw(ev);
-            document.getElementById(`filter-${id}`).remove();
-            renderFilterBox(id);
             ev.preventDefault();
         }
     } else {
@@ -250,8 +255,6 @@ const renderFilterBox = (id) => {
                 cb.checked = true;
             });
             updateFilterAndRedraw(ev);
-            document.getElementById(`filter-${id}`).remove();
-            renderFilterBox(id);
             ev.preventDefault();
         }
     }
@@ -260,9 +263,8 @@ const renderFilterBox = (id) => {
 const updateFilterAndRedraw = ev => {
     const elem = ev.currentTarget;
     const id = elem.parentElement.id;
-    // document.getElementById(`filter-${id}`).remove();
-    // renderFilterBox(id);
     const col = id.split('-')[1];
+    console.log(col, `filter-${col}`);
     state.columns[col].filters = [];
     document.querySelectorAll(`#${id} input`).forEach(cb => {
         if(cb.checked) {
@@ -272,6 +274,10 @@ const updateFilterAndRedraw = ev => {
     // console.log(state);
     document.querySelector('table').remove();
     renderTable();
+
+    // redraw filter box
+    document.getElementById(`filter-${col}`).remove();
+    renderFilterBox(col);
 };
 
 const renderTable = () => {
