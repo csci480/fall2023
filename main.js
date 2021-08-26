@@ -243,8 +243,6 @@ const renderFilterBox = (id) => {
             style="width: ${w}px; top: ${y}px; left: ${x}px;">
                 ${batchButton}<br><br>
                 ${cbList.join('')}
-                <br>
-                dasdsada
         </div>`;
     document.body.insertAdjacentHTML('beforeend', div);
     document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
