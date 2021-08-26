@@ -203,35 +203,52 @@ const showFilterBox = ev => {
     if (div) {
         div.remove();
     } else {
-        const parent = elem.parentElement;
-        const w = parent.offsetWidth + 2;
-        const y = parent.getBoundingClientRect().top + window.scrollY + parent.offsetHeight - 2;
-        const x = parent.getBoundingClientRect().left;
-        let cbList = [];
-        state.columns[id].values.forEach(option => {
-            cbList.push(`<input type="checkbox" value="${option}"
-                ${state.columns[id].filters.includes(option) ? 'checked' : ''}>
-                ${option}<br>`);
-        });
-        const div = `
-            <div class="box" id="filter-${id}"
-                style="width: ${w}px; top: ${y}px; left: ${x}px;">
-                    <a id="filter-${id}-batch-select" href="#">Deselect All</a><br><br>
-                    ${cbList.join('')}
-            </div>`;
-        document.body.insertAdjacentHTML('beforeend', div);
-        document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
-            cb.onclick = updateFilterAndRedraw;
-        });
-        document.querySelector(`#filter-${id}-batch-select`).onclick = ev => {
+        renderFilterBox(elem.parentElement, id)
+    }
+    ev.preventDefault();
+};
+
+const renderFilterBox = (parent, id) => {
+    const w = parent.offsetWidth + 2;
+    const y = parent.getBoundingClientRect().top + window.scrollY + parent.offsetHeight - 2;
+    const x = parent.getBoundingClientRect().left;
+    let cbList = [];
+    state.columns[id].values.forEach(option => {
+        cbList.push(`<input type="checkbox" value="${option}"
+            ${state.columns[id].filters.includes(option) ? 'checked' : ''}>
+            ${option}<br>`);
+    });
+    const ratio = state.columns[id].filters.length / state.columns[id].values.length;
+    const batchOption = ratio > 0.5 ? 'deselect' : 'select'
+    const batchButton = `<a id="filter-${id}-${batchOption}" href="#">
+        ${batchOption} all</a>`;
+    const div = `
+        <div class="box" id="filter-${id}"
+            style="width: ${w}px; top: ${y}px; left: ${x}px;">
+                ${batchButton}<br><br>
+                ${cbList.join('')}
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', div);
+    document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
+        cb.onclick = updateFilterAndRedraw;
+    });
+    if (batchOption === 'deselect') {
+        document.querySelector(`#filter-${id}-deselect`).onclick = ev => {
             document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
                 cb.checked = false;
             });
             updateFilterAndRedraw(ev);
             ev.preventDefault();
         }
+    } else {
+        document.querySelector(`#filter-${id}-select`).onclick = ev => {
+            document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
+                cb.checked = true;
+            });
+            updateFilterAndRedraw(ev);
+            ev.preventDefault();
+        }
     }
-    ev.preventDefault();
 };
 
 const updateFilterAndRedraw = ev => {
