@@ -70,14 +70,14 @@ const rowsToTable = rows => {
     return `
         <table>
             <tr>
-                <th>
+                <th id="th-category">
                     <a href="#" class="sort ${state.sortDirection} ${(state.sortColumn === 'category') ? 'active' : ''}" data-key="category">Category</a>
                     <i class="fa fa-filter" data-key="category"></i>
                 </th>
-                <th>
+                <th id="th-description">
                     <a href="#" class="sort ${state.sortDirection} ${(state.sortColumn === 'description') ? 'active' : ''}" data-key="description">Link</a>
                 </th>
-                <th>
+                <th id="th-tags">
                     <span>Tags</span>
                     <i class="fa fa-filter" data-key="tags"></i>
                 </th>
@@ -203,12 +203,14 @@ const showFilterBox = ev => {
     if (div) {
         div.remove();
     } else {
-        renderFilterBox(elem.parentElement, id)
+        renderFilterBox(id)
     }
     ev.preventDefault();
 };
 
-const renderFilterBox = (parent, id) => {
+const renderFilterBox = (id) => {
+    console.log(`#th-${id}`);
+    const parent = document.querySelector(`#th-${id}`);
     const w = parent.offsetWidth + 2;
     const y = parent.getBoundingClientRect().top + window.scrollY + parent.offsetHeight - 2;
     const x = parent.getBoundingClientRect().left;
@@ -238,6 +240,8 @@ const renderFilterBox = (parent, id) => {
                 cb.checked = false;
             });
             updateFilterAndRedraw(ev);
+            document.getElementById(`filter-${id}`).remove();
+            renderFilterBox(id);
             ev.preventDefault();
         }
     } else {
@@ -246,6 +250,8 @@ const renderFilterBox = (parent, id) => {
                 cb.checked = true;
             });
             updateFilterAndRedraw(ev);
+            document.getElementById(`filter-${id}`).remove();
+            renderFilterBox(id);
             ev.preventDefault();
         }
     }
@@ -254,6 +260,8 @@ const renderFilterBox = (parent, id) => {
 const updateFilterAndRedraw = ev => {
     const elem = ev.currentTarget;
     const id = elem.parentElement.id;
+    // document.getElementById(`filter-${id}`).remove();
+    // renderFilterBox(id);
     const col = id.split('-')[1];
     state.columns[col].filters = [];
     document.querySelectorAll(`#${id} input`).forEach(cb => {
