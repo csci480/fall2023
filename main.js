@@ -216,12 +216,20 @@ const showFilterBox = ev => {
         const div = `
             <div class="box" id="filter-${id}"
                 style="width: ${w}px; top: ${y}px; left: ${x}px;">
+                    <a id="filter-${id}-batch-select" href="#">Deselect All</a><br><br>
                     ${cbList.join('')}
             </div>`;
         document.body.insertAdjacentHTML('beforeend', div);
         document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
             cb.onclick = updateFilterAndRedraw;
         });
+        document.querySelector(`#filter-${id}-batch-select`).onclick = ev => {
+            document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
+                cb.checked = false;
+            });
+            updateFilterAndRedraw(ev);
+            ev.preventDefault();
+        }
     }
     ev.preventDefault();
 };
