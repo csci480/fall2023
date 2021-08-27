@@ -125,6 +125,7 @@ const processData = data => {
             isAutomation: row[7] === 'Y',
             isDataCapitalism: row[8] === 'Y',
             isGuidebook: row[9] === 'Y',
+            isEconomics: row[10] === 'Y',
             tags: []
         }
         if (rec.isSurveillance) rec.tags.push('surveillance');
@@ -134,6 +135,7 @@ const processData = data => {
         if (rec.isAutomation) rec.tags.push('automation');
         if (rec.isDataCapitalism) rec.tags.push('data capitalism');
         if (rec.isGuidebook) rec.tags.push('guidebook');
+        if (rec.isEconomics) rec.tags.push('economics');
 
         rows.push(rec);
     });
