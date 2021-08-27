@@ -273,7 +273,9 @@ const init = () => {
     }
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetsId}/values/Sheet1?key=${key}`;
     
-    fetch(url)
+    fetch(url, {
+        referrer: "https://vanwars.github.io/google-sheets/"
+      })
         .then(response => response.json())
         .then(data => {
             state.rows = processData(data);
