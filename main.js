@@ -2,40 +2,6 @@
 // https://stackoverflow.com/questions/46583052/http-google-sheets-api-v4-how-to-access-without-oauth-2-
 // Note: ensure that your Google Sheets "Share" setting is Public Read-only.
 
-const state = {
-    sortColumn: 'category',
-    sortDirection: 'asc',
-    rows: [],
-    filteredRows: [],
-    columns: {
-        'category': {
-            name: 'Category',
-            data_type: 'string',
-            values: [],
-            filters: [],
-            filterable: true,
-            sortable: true,
-            colWidth: '200px'
-        },
-        'description': {
-            name: 'Description',
-            data_type: 'string',
-            values: [],
-            filterable: false,
-            sortable: true
-        },
-        'tags': {
-            name: 'Tags',
-            data_type: 'list',
-            values: [],
-            filters: [],
-            filterable: true,
-            sortable: false,
-            colWidth: '250px'
-        }
-    }
-};
-
 const buildTableHeaderRow = () => {
     const ths = [];
     
