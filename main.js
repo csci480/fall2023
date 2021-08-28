@@ -209,6 +209,20 @@ const hideFilterMenus = () => {
     });
 };
 
+const updateFilterBoxPosition = () => {
+    let div = document.querySelector(`div[id^=filter-]`)
+    if (div) {
+        const id = div.getAttribute('data-key');
+        const parent = document.querySelector(`#th-${id}`);
+        const w = parent.offsetWidth + 2;
+        const y = parent.getBoundingClientRect().top + window.scrollY + parent.offsetHeight - 2;
+        const x = parent.getBoundingClientRect().left;
+        div.style.left = `${x}px`;
+        div.style.top = `${y}px`;
+        div.style.width = `${w}px`;
+    }
+};
+
 const renderFilterBox = (id) => {
     console.log(`#th-${id}`);
     const parent = document.querySelector(`#th-${id}`);
@@ -226,7 +240,7 @@ const renderFilterBox = (id) => {
     const batchButton = `<a id="filter-${id}-${batchOption}" href="#">
         ${batchOption} all</a>`;
     const div = `
-        <div class="box" id="filter-${id}"
+        <div class="box" id="filter-${id}" data-key="${id}"
             style="width: ${w}px; top: ${y}px; left: ${x}px;">
                 ${batchButton}<br><br>
                 ${cbList.join('')}
@@ -304,10 +318,17 @@ const init = () => {
             state.columns.category.filters = [...state.columns.category.values];
             state.columns.tags.values = getDistinctValues(state.rows, 'tags');
             state.columns.tags.filters = [...state.columns.tags.values];
-            console.log(state);
             renderTable();
-            document.body.onclick = hideFilterMenus;
         });
+    
+    /************************
+     * Global event handlers
+     * **********************/
+    // if filter box is open, this keeps its position if user scrolls:
+    window.onscroll = updateFilterBoxPosition;
+
+    // if filter box is visible, hide it:
+    document.body.onclick = hideFilterMenus;
 };
 
 init();
