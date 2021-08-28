@@ -225,10 +225,6 @@ const updateFilterBoxPosition = () => {
 
 const renderFilterBox = (id) => {
     console.log(`#th-${id}`);
-    const parent = document.querySelector(`#th-${id}`);
-    const w = parent.offsetWidth + 2;
-    const y = parent.getBoundingClientRect().top + window.scrollY + parent.offsetHeight - 2;
-    const x = parent.getBoundingClientRect().left;
     let cbList = [];
     state.columns[id].values.forEach(option => {
         cbList.push(`<input type="checkbox" value="${option}"
@@ -240,36 +236,39 @@ const renderFilterBox = (id) => {
     const batchButton = `<a id="filter-${id}-${batchOption}" href="#">
         ${batchOption} all</a>`;
     const div = `
-        <div class="box" id="filter-${id}" data-key="${id}"
-            style="width: ${w}px; top: ${y}px; left: ${x}px;">
+        <div class="box" id="filter-${id}" data-key="${id}">
                 ${batchButton}<br><br>
                 ${cbList.join('')}
         </div>`;
     document.body.insertAdjacentHTML('beforeend', div);
+    // set the position:
+    updateFilterBoxPosition();
+    
+    // add event handlers:
     document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
         cb.onclick = updateFilterAndRedraw;
     });
     document.getElementById(`filter-${id}`).onclick = ev => {
         ev.stopPropagation();
     }
+
+    const handleBatchFilterUpdate = ev => {
+        const elem = ev.currentTarget;
+        const flag = elem.innerHTML.indexOf('deselect') >= 0 ? false : true;
+        document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
+            cb.checked = flag;
+        });
+        updateFilterAndRedraw(ev);
+        ev.preventDefault();
+    };
+
     if (batchOption === 'deselect') {
-        document.querySelector(`#filter-${id}-deselect`).onclick = ev => {
-            document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
-                cb.checked = false;
-            });
-            updateFilterAndRedraw(ev);
-            ev.preventDefault();
-        }
+        document.querySelector(`#filter-${id}-deselect`).onclick = handleBatchFilterUpdate;
     } else {
-        document.querySelector(`#filter-${id}-select`).onclick = ev => {
-            document.querySelectorAll(`#filter-${id} input`).forEach(cb => {
-                cb.checked = true;
-            });
-            updateFilterAndRedraw(ev);
-            ev.preventDefault();
-        }
+        document.querySelector(`#filter-${id}-select`).onclick = handleBatchFilterUpdate;
     }
 };
+
 
 const updateFilterAndRedraw = ev => {
     const elem = ev.currentTarget;
