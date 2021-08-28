@@ -28,7 +28,7 @@ const state = {
             values: [],
             filters: [],
             filterable: true,
-            sortable: false,
+            sortable: true,
             colWidth: '250px'
         }
     }

@@ -16,16 +16,19 @@ h1, table {
 }
 table {
     border-collapse: collapse;
+    border-left: solid 1px #CCC;
+    border-right: solid 1px #CCC;
+    border-top: solid 1px #CCC;
 }
 td, th {
-    border: solid 2px #000;
+    border-bottom: solid 1px #DDD;
+    border-right: dotted 1px #DDD;
     padding: 8px;
     text-align: left;
 }
 
 th {
     /* For sticky headers */
-    position: -webkit-sticky;
     position: sticky;
     top: 0;
     z-index: 2;
@@ -73,9 +76,9 @@ th .fa-filter.active:hover {
     padding: 5px 5px 20px 10px;
     background-color:#EEE;
     position: absolute;
-    border-left: solid 2px black;
-    border-right: solid 2px black;
-    border-bottom: solid 2px black;
+    border-left: solid 1px #CCC;
+    border-right: solid 1px #CCC;
+    border-bottom: solid 1px #CCC;
     margin-left: -1px;
 }
 
@@ -83,11 +86,23 @@ th .fa-filter.active:hover {
     display: none;
 }
 
-a {
+th a, th a:visited, th a:active, th a:hover, th span {
+    color: #444;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+th a:hover {
+    color: black;
+    background: #DDD;
+}
+
+td a {
     text-decoration: none;
     color: #e91d83;
 }
-a:visited {
+td a:visited {
     color: #444;
 }
 td a:hover {

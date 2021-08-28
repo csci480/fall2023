@@ -62,12 +62,31 @@ const rowsToTable = rows => {
 const sortByColumn = () => {
     const key = state.sortColumn,
         direction = state.sortDirection,
-        data = state.filteredRows || state.rows;
+        data = state.filteredRows || state.rows
+        dataType = state.columns[key].data_type;
     const multiplier = direction === 'desc' ? -1 : 1;
-    data.sort((a, b) => {
-        const comparison = a[key].localeCompare(b[key]) * multiplier;
-        return comparison;
-    });
+    
+    const stringSorter = (a, b) => {
+        return a[key].localeCompare(b[key]) * multiplier;
+    };
+    
+    const listSorter = (a, b) => {
+        let first = a[key];
+        let second = b[key];
+        // sort by first item
+        // first = first.length > 0 ? first[0] : '';
+        // second = second.length > 0 ? second[0] : '';
+        // sort by length of lists
+        first = first.length;
+        second = second.length;
+        return (first - second) * multiplier;
+    }
+
+    if (dataType === 'list') {
+        data.sort(listSorter);
+    } else {
+        data.sort(stringSorter);
+    }
 };
 
 const filterData = () => {
