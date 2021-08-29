@@ -73,13 +73,17 @@ const sortByColumn = () => {
     const listSorter = (a, b) => {
         let first = a[key];
         let second = b[key];
-        // sort by first item
-        // first = first.length > 0 ? first[0] : '';
-        // second = second.length > 0 ? second[0] : '';
+        // sort by first item (blanks always at the bottom)
+        first = first.length > 0 ? first[0] : '';
+        second = second.length > 0 ? second[0] : '';
+        if(first === "") return 1;
+        if(second === "") return -1;
+        return first.localeCompare(second) * multiplier;
+        
         // sort by length of lists
-        first = first.length;
-        second = second.length;
-        return (first - second) * multiplier;
+        // first = first.length;
+        // second = second.length;
+        // return (first - second) * multiplier;
     }
 
     if (dataType === 'list') {

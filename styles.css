@@ -19,6 +19,7 @@ table {
     border-left: solid 1px #CCC;
     border-right: solid 1px #CCC;
     border-top: solid 1px #CCC;
+    margin-bottom: 50px;
 }
 td, th {
     border-bottom: solid 1px #DDD;
