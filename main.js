@@ -155,6 +155,8 @@ const processData = data => {
         if (rec.isDataCapitalism) rec.tags.push('data capitalism');
         if (rec.isGuidebook) rec.tags.push('guidebook');
         if (rec.isEconomics) rec.tags.push('economics');
+        
+        rec.tags.sort(); // sort tags after list is built
 
         rows.push(rec);
     });
