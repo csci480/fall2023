@@ -46,6 +46,7 @@ const rowsToTable = rows => {
                 <td>${row.category}</td>
                 <td>
                     <a href="${row.link}" target="_blank">${row.description}</a>
+                    ${row.notes ? '<p class="notes">' + row.notes + '</p>': ''}
                     </td>
                 <td>${tags}</td>
             </tr>
@@ -140,16 +141,17 @@ const processData = data => {
         const rec = {
             category: row[0],
             description: row[1],
-            link: row[2],
-            isSurveillance: row[3] === 'Y',
-            isToolOfResistance: row[4] === 'Y',
-            isCrt: row[5] === 'Y',
-            isFacialRecognition: row[6] === 'Y',
-            isAutomation: row[7] === 'Y',
-            isDataCapitalism: row[8] === 'Y',
-            isGuidebook: row[9] === 'Y',
-            isEconomics: row[10] === 'Y',
-            isPolitics: row[11] === 'Y',
+            notes: row[2],
+            link: row[3],
+            isSurveillance: row[4] === 'Y',
+            isToolOfResistance: row[5] === 'Y',
+            isCrt: row[6] === 'Y',
+            isFacialRecognition: row[7] === 'Y',
+            isAutomation: row[8] === 'Y',
+            isDataCapitalism: row[9] === 'Y',
+            isGuidebook: row[10] === 'Y',
+            isEconomics: row[11] === 'Y',
+            isPolitics: row[12] === 'Y',
             tags: []
         }
         if (rec.isSurveillance) rec.tags.push('surveillance');
@@ -162,7 +164,7 @@ const processData = data => {
         if (rec.isEconomics) rec.tags.push('economics');
         if (rec.isPolitics) rec.tags.push('politics');
 
-        const additionalTags = row[12] || '';
+        const additionalTags = row[13] || '';
         additionalTags.split(',').forEach(tag => {
             tag = tag.trim();
             if (tag.length > 0) {

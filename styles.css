@@ -104,9 +104,9 @@ td a {
     text-decoration: none;
     color: #e91d83;
 }
-td a:visited {
+/* td a:visited {
     color: #444;
-}
+} */
 td a:hover {
     text-decoration: underline;
 }
@@ -121,4 +121,9 @@ td a:hover {
     content: '\f0d8 ';
     margin-right: 5px;
     font-family: "Font Awesome 5 Free";
+}
+
+.notes {
+    color: #777;
+    font-size: 0.9em;
 }
