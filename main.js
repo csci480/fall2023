@@ -12,7 +12,7 @@ const buildTableHeaderRow = () => {
         
         if (col.sortable) {
             colNameElement = `<a href="#" data-key="${key}"
-                class="sort ${state.sortDirection} ${(state.sortColumn === key) ? 'active' : ''}" >
+                class="sort ${state.columns[state.sortColumn].sortDirection} ${(state.sortColumn === key) ? 'active' : ''}" >
                     ${col.name}
                 </a>`;
         }
@@ -61,7 +61,7 @@ const rowsToTable = rows => {
 
 const sortByColumn = () => {
     const key = state.sortColumn,
-        direction = state.sortDirection,
+        direction = state.columns[state.sortColumn].sortDirection,
         data = state.filteredRows || state.rows
         dataType = state.columns[key].data_type;
     const multiplier = direction === 'desc' ? -1 : 1;
@@ -76,8 +76,8 @@ const sortByColumn = () => {
         // sort by first item (blanks always at the bottom)
         first = first.length > 0 ? first[0] : '';
         second = second.length > 0 ? second[0] : '';
-        if(first === "") return 1;
-        if(second === "") return -1;
+        if(first === "") return 1 * multiplier;
+        if(second === "") return -1 * multiplier;
         return first.localeCompare(second) * multiplier;
         
         // sort by length of lists
@@ -149,6 +149,7 @@ const processData = data => {
             isDataCapitalism: row[8] === 'Y',
             isGuidebook: row[9] === 'Y',
             isEconomics: row[10] === 'Y',
+            isPolitics: row[11] === 'Y',
             tags: []
         }
         if (rec.isSurveillance) rec.tags.push('surveillance');
@@ -159,6 +160,15 @@ const processData = data => {
         if (rec.isDataCapitalism) rec.tags.push('data capitalism');
         if (rec.isGuidebook) rec.tags.push('guidebook');
         if (rec.isEconomics) rec.tags.push('economics');
+        if (rec.isPolitics) rec.tags.push('politics');
+
+        const additionalTags = row[12] || '';
+        additionalTags.split(',').forEach(tag => {
+            tag = tag.trim();
+            if (tag.length > 0) {
+                rec.tags.push(tag);
+            }
+        });
         
         rec.tags.sort(); // sort tags after list is built
 
@@ -184,14 +194,14 @@ const sortTable = ev => {
     document.querySelector('table').remove();
 
     const elem = ev.currentTarget;
-    if (elem.classList.contains('asc')) {
-        state.sortDirection = 'desc';
-    } else {
-        state.sortDirection = 'asc';
-    }
     state.sortColumn = elem.getAttribute('data-key');
-
     renderTable();
+
+    if (state.columns[state.sortColumn].sortDirection === 'asc') {
+        state.columns[state.sortColumn].sortDirection = 'desc';
+    } else {
+        state.columns[state.sortColumn].sortDirection = 'asc';
+    }
     ev.preventDefault();
 };
 
