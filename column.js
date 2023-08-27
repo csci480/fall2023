@@ -1,6 +1,10 @@
-export default class Base {
+export default class Column {
+    static stringSorter(a, b) {
+        const val1 = a.toLowerCase();
+        const val2 = b.toLowerCase();
+        return val1.localeCompare(val2);
+    }
     constructor(opts, ordering) {
-        console.log(opts, ordering);
         if (!opts.id || !opts.name || ordering == null) {
             throw Error(
                 "opts.id, opts.name, and order properties are required."
@@ -17,13 +21,27 @@ export default class Base {
         this.sortDirection = "asc";
 
         Object.assign(this, opts);
-        console.log(this);
     }
 
-    getDistinctValues(rows) {
-        const cells = rows.map((row) => row.cells[this.ordering]);
-        // if we just want a distinct list:
-        return [...new Set(cells)].sort();
+    initFilters(rows) {
+        // get a list of all the column values:
+        let cells = [];
+        if (this.dataType === "tags") {
+            rows.forEach((row) => {
+                // make each comma-separated element its own filter:
+                const cellValues = row.cells[this.ordering]
+                    .split(/[.,]/)
+                    .map((cell) => cell.trim())
+                    .filter((cell) => cell.length > 0);
+                cells = cells.concat(cellValues);
+            });
+        } else {
+            cells = rows.map((row) => row.cells[this.ordering]);
+        }
+
+        // keep only unique values:
+        this.filters = [...new Set(cells)].sort(Column.stringSorter);
+        this.activeFilters = [...this.filters];
     }
 
     getHeaderCell(sortId) {
@@ -48,10 +66,18 @@ export default class Base {
 
         return `
             <th id="th-${this.id}" ${
-            this.colWidth ? ` style="min-width:${this.colWidth};"` : ""
+            this.colWidth ? ` style="min-width:${this.colWidth}px;"` : ""
         }>
                 ${colNameElement}
                 ${colFilterElement}
             </th>`;
+    }
+
+    matchFilter(cellValue) {
+        // if the cell value matches ANY of the
+        // filter criteria, return true:
+        return this.activeFilters
+            .map((filter) => cellValue.includes(filter))
+            .reduce((a, b) => a || b, false);
     }
 }

@@ -27,16 +27,25 @@ export default class Row {
     }
 
     applyFilter() {
-        this.filterMatches = [];
-        this.columns.forEach((col) => {
-            const val = this.cells[col.ordering];
-            col.activeFilters.forEach((filter) => {
-                this.filterMatches.push(val.includes(filter));
-            });
+        // hard-coded for testing:
+        // this.columns[1].activeFilters = [
+        //     "Andrew Hair",
+        //     "Mason Bradley",
+        //     "Taylor Van Aken",
+        // ];
+        // this.columns[5].activeFilters = [
+        //     "Medium-Term (in 3-5 years)",
+        //     "After Graduation / Internship",
+        // ];
+
+        // tracks whether the cell value matches the filter
+        // criteria for each column. If there are not filter
+        // criteria specified, it returns true:
+        const matchesByColumn = this.columns.map((col) => {
+            const cellValue = this.cells[col.ordering];
+            return col.matchFilter(cellValue);
         });
-        // if all of the matches are true of if there are
-        // no active filters, then display the row:
-        this.isVisible = this.filterMatches.reduce((a, b) => a && b, true);
-        console.log(this.filterMatches, hidden);
+        // multiple criteria across multiple columns should be "and-ed".
+        this.isVisible = matchesByColumn.reduce((a, b) => a && b, true);
     }
 }

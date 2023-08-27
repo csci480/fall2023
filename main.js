@@ -1,6 +1,7 @@
 import Column from "./column.js";
 import Row from "./row.js";
 import config from "./config.js";
+
 // This works:
 // https://stackoverflow.com/questions/46583052/http-google-sheets-api-v4-how-to-access-without-oauth-2-
 // Note: ensure that your Google Sheets "Share" setting is Public Read-only.
@@ -17,68 +18,47 @@ class Table {
 
         // this.initColumns();
         this.fetchData();
+
+        window.onscroll = this.updateFilterBoxPosition.bind(this);
+
+        // if filter box is visible, hide it:
+        document.body.onclick = this.hideFilterMenus.bind(this);
     }
 
-    initColumnsAndRows(data) {
+    initColumns() {
         this.columns = config.columns.map((col, idx) => new Column(col, idx));
         this.columns.forEach((col) => (this.columnMap[col.id] = col));
+    }
 
+    initRows(data) {
+        this.rows = [];
         data.forEach((rec) => {
             this.rows.push(new Row(rec, this.columns));
         });
+    }
+
+    initColumnsAndRows(data) {
+        this.initColumns();
+        this.initRows(data);
+        this.columns.forEach(
+            ((col) => {
+                col.initFilters(this.rows);
+            }).bind(this)
+        );
     }
 
     clearColumnData() {
         this.columns.forEach((col) => (col.cells = []));
     }
 
-    // setColumnData(rows) {
-    //     rows.forEach((row) => {
-    //         this.columns.forEach((col, idx) => {
-    //             col.addCell(row[idx]);
-    //         });
-    //     });
-    //     this.columns.forEach((col) => {
-    //         if (col.filterable) {
-    //             console.log(col.getDistinctValues());
-    //         }
-    //     });
-    // }
-
     columnsToListOfRows() {
         return this.rows.map((row) => row.cells);
-        // for (let i = 0; i < this.columns[0].cells.length; i++) {
-        //     const row = this.columns.map((col) => col.cells[i]);
-        //     data.push(row);
-        // }
-        // console.log(data);
-        // return data;
     }
 
     filterData() {
-        const rows = this.columnsToListOfRows();
-        // const categoryFilters = state.columns.category.filters;
-        // const tagFilters = state.columns.tags.filters;
-
-        // if (categoryFilters.length + tagFilters.length === 0) {
-        //     state.filteredRows = null;
-        // }
-
-        // state.filteredRows = [];
-        // rows.forEach((row) => {
-        //     const categoryMatch =
-        //         categoryFilters.length ===
-        //             state.columns.category.values.length ||
-        //         categoryFilters.includes(row.category);
-        //     const tagMatch =
-        //         tagFilters.length === state.columns.tags.values.length ||
-        //         tagFilters.some((a) => row.tags.includes(a));
-        //     // console.log(categoryMatch, tagMatch, row.category, row.tags)
-        //     if (categoryMatch && tagMatch) {
-        //         state.filteredRows.push(row);
-        //     }
-        // });
-        // state.filteredRows = rows;
+        this.rows.forEach((row) => {
+            row.applyFilter();
+        });
     }
 
     validateConfig() {
@@ -107,24 +87,20 @@ class Table {
             referrer: "https://vanwars.github.io/google-sheets/",
         });
         const data = await response.json();
-        console.log(data);
-        // state.rows = processData(data);
         const rows = data.values;
         rows.shift();
-
         this.initColumnsAndRows(rows);
-
-        // this.setColumnData(rows);
         this.renderTable();
     }
 
     renderTable() {
-        console.log("Rendering table!!!");
-        // filterData();
         this.sortByColumn();
+        this.filterData();
 
         // build rows:
-        const tableRows = this.rows.map((row) => row.getTableRow());
+        const tableRows = this.rows
+            .filter((row) => row.isVisible)
+            .map((row) => row.getTableRow());
 
         // build header row:
         const headerRow = `<tr>
@@ -146,13 +122,11 @@ class Table {
     attachEventHandlers() {
         document.querySelectorAll("a.sort").forEach(
             ((a) => {
-                // console.log(a);
                 a.onclick = this.sortTable.bind(this);
             }).bind(this)
         );
         document.querySelectorAll(".fa-filter").forEach(
             ((a) => {
-                // console.log(a);
                 a.onclick = this.showFilterBox.bind(this);
             }).bind(this)
         );
@@ -179,7 +153,9 @@ class Table {
         const col = this.columnMap[key];
         const multiplier = col.sortDirection === "desc" ? -1 : 1;
         const stringSorter = (a, b) => {
-            return a[col.ordering].localeCompare(b[col.ordering]) * multiplier;
+            const val1 = a[col.ordering].toLowerCase();
+            const val2 = b[col.ordering].toLowerCase();
+            return val1.localeCompare(val2) * multiplier;
         };
 
         // convert to array of arrays to sort:
@@ -206,15 +182,13 @@ class Table {
     }
 
     renderFilterBox(col) {
-        console.log(`#th-${col.id}`);
         let cbList = [];
-        const values = col.getDistinctValues(this.rows);
-        values.forEach((option) => {
+        col.filters.forEach((option) => {
             cbList.push(`<input type="checkbox" value="${option}"
                 ${col.activeFilters.includes(option) ? "checked" : ""}>
                 ${option}<br>`);
         });
-        const ratio = col.activeFilters.length / values.length;
+        const ratio = (col.activeFilters.length * 1.0) / col.filters.length;
         const batchOption = ratio > 0.5 ? "deselect" : "select";
         const batchButton = `<a id="filter-${col.id}-${batchOption}" href="#">
             ${batchOption} all</a>`;
@@ -228,30 +202,54 @@ class Table {
         this.updateFilterBoxPosition(col);
 
         // add event handlers:
-        // document.querySelectorAll(`#filter-${col.id} input`).forEach((cb) => {
-        //     cb.onclick = updateFilterAndRedraw;
-        // });
+        document.querySelectorAll(`#filter-${col.id} input`).forEach((cb) => {
+            cb.onclick = this.updateFilterAndRedraw.bind(this);
+        });
         document.getElementById(`filter-${col.id}`).onclick = (ev) => {
             ev.stopPropagation();
         };
 
-        // const handleBatchFilterUpdate = (ev) => {
-        //     const elem = ev.currentTarget;
-        //     const flag = elem.innerHTML.indexOf("deselect") >= 0 ? false : true;
-        //     document.querySelectorAll(`#filter-${id} input`).forEach((cb) => {
-        //         cb.checked = flag;
-        //     });
-        //     updateFilterAndRedraw(ev);
-        //     ev.preventDefault();
-        // };
+        if (batchOption === "deselect") {
+            document.querySelector(`#filter-${col.id}-deselect`).onclick =
+                this.handleBatchFilterUpdate.bind(this);
+        } else {
+            document.querySelector(`#filter-${col.id}-select`).onclick =
+                this.handleBatchFilterUpdate.bind(this);
+        }
+    }
 
-        // if (batchOption === "deselect") {
-        //     document.querySelector(`#filter-${id}-deselect`).onclick =
-        //         handleBatchFilterUpdate;
-        // } else {
-        //     document.querySelector(`#filter-${id}-select`).onclick =
-        //         handleBatchFilterUpdate;
-        // }
+    handleBatchFilterUpdate(ev) {
+        const elem = ev.currentTarget;
+        const id = elem.parentElement.id;
+        // const key = elem.parentElement.getAttribute("data-key");
+        const flag = elem.innerHTML.indexOf("deselect") >= 0 ? false : true;
+        document.querySelectorAll(`#${id} input`).forEach((cb) => {
+            cb.checked = flag;
+        });
+        this.updateFilterAndRedraw(ev);
+        ev.preventDefault();
+    }
+
+    updateFilterAndRedraw(ev) {
+        const elem = ev.currentTarget;
+        const key = elem.parentElement.getAttribute("data-key");
+        const id = elem.parentElement.id;
+        const col = this.columnMap[key];
+        col.activeFilters = [];
+        document.querySelectorAll(`#${id} input`).forEach((cb) => {
+            if (cb.checked) {
+                col.activeFilters.push(cb.value);
+            }
+        });
+        document.querySelector("table").remove();
+        this.renderTable();
+
+        // redraw filter box
+        if (document.getElementById(id)) {
+            document.getElementById(id).remove();
+        }
+        this.renderFilterBox(col);
+        ev.stopPropagation();
     }
 
     hideFilterMenus() {
@@ -282,4 +280,5 @@ class Table {
     }
 }
 
-const table = new Table(config);
+// initialize the table:
+new Table(config);
