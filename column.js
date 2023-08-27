@@ -9,24 +9,21 @@ export default class Base {
         this.ordering = ordering;
         this.dataType = "string";
         this.filterable = false;
-        this.sortable = true;
-        this.colWidth = "100px";
-        this.values = [];
         this.filters = [];
+        this.activeFilters = [];
+        this.sortable = true;
+        this.colWidth = "150px";
+        this.values = [];
         this.sortDirection = "asc";
-        this.cells = [];
 
         Object.assign(this, opts);
         console.log(this);
     }
 
-    getTableCell(idx) {
-        if (this.dataType === "url") {
-            return `<td><a href="${this.cells[idx]}" target="_blank">${
-                this.linkText ? this.linkText : "website"
-            }</a></td>`;
-        }
-        return `<td>${this.cells[idx]}</td>`;
+    getDistinctValues(rows) {
+        const cells = rows.map((row) => row.cells[this.ordering]);
+        // if we just want a distinct list:
+        return [...new Set(cells)].sort();
     }
 
     getHeaderCell(sortId) {
