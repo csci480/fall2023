@@ -7,8 +7,7 @@ import config from "./config.js";
 // Note: ensure that your Google Sheets "Share" setting is Public Read-only.
 
 class Table {
-    constructor(config) {
-        this.config = config;
+    constructor() {
         this.columns = [];
         this.rows = [];
         this.columnMap = {};
@@ -62,18 +61,18 @@ class Table {
     }
 
     validateConfig() {
-        if (!this.config.key) {
+        if (!config.key) {
             throw new Error(
                 "please define a variable called key that has your Google API key"
             );
         }
-        if (!this.config.sheetsId) {
+        if (!config.sheetsId) {
             throw new Error(
                 "please define a variable called sheetsId that has your Google sheets ID"
             );
         }
 
-        if (!this.config.tabName) {
+        if (!config.tabName) {
             throw new Error(
                 "please define a variable called tabName that has the name of the tab (e.g., Sheet1)"
             );
@@ -281,4 +280,4 @@ class Table {
 }
 
 // initialize the table:
-new Table(config);
+new Table();

@@ -4,8 +4,6 @@ export default {
     sheetsId: "1sCzg49oABRtnIVxWeCT7EJDfijWzbP3MHoj0ks5PKY4",
     tabName: "Form Responses 1",
     sortColumn: "name",
-    rows: [],
-    filteredRows: [],
     columns: [
         { id: "timestamp", name: "Timestamp" },
         { id: "name", name: "Name", filterable: true, filterBoxWidth: 200 },
