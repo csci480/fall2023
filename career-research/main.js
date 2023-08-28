@@ -186,7 +186,7 @@ class Table {
         col.filters.forEach((option) => {
             cbList.push(`<input type="checkbox" value="${option}"
                 ${col.activeFilters.includes(option) ? "checked" : ""}>
-                ${option}<br>`);
+                ${option} (${col.filterMap[option]})<br>`);
         });
         const ratio = (col.activeFilters.length * 1.0) / col.filters.length;
         const batchOption = ratio > 0.5 ? "deselect" : "select";
@@ -273,6 +273,8 @@ class Table {
             const offsetX =
                 (window.pageXOffset || document.documentElement.scrollLeft) -
                 (document.documentElement.clientLeft || 0);
+
+            col = this.columnMap[id];
             div.style.left = `${x + offsetX}px`;
             div.style.top = `${y}px`;
             div.style.width = `${col.filterBoxWidth || w}px`;

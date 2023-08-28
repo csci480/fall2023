@@ -40,7 +40,17 @@ export default class Column {
         }
 
         // keep only unique values:
-        this.filters = [...new Set(cells)].sort(Column.stringSorter);
+        this.filterMap = {};
+        cells.forEach((cell) => {
+            if (this.filterMap[cell]) {
+                this.filterMap[cell] += 1;
+            } else {
+                this.filterMap[cell] = 1;
+            }
+        });
+        this.filters = [...Object.keys(this.filterMap)].sort(
+            Column.stringSorter
+        );
         this.activeFilters = [...this.filters];
     }
 

@@ -32,7 +32,7 @@ export default {
             name: "Time Scale",
             colWidth: 200,
             filterable: true,
-            filterBoxWidth: 300,
+            filterBoxWidth: 400,
         },
         {
             id: "skills_needed",
@@ -49,7 +49,7 @@ export default {
             name: "Classification",
             colWidth: 200,
             filterable: true,
-            filterBoxWidth: 300,
+            filterBoxWidth: 340,
             dataType: "tags",
         },
         { id: "why", name: "Why is this interesting?", colWidth: 400 },
