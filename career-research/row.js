@@ -10,6 +10,9 @@ export default class Row {
         const tds = this.cells
             .map((cell, idx) => {
                 const col = this.columns[idx];
+                if (col.hidden) {
+                    return "";
+                }
                 return this.getTableCell(col);
             })
             .join("\n");

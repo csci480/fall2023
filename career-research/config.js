@@ -5,7 +5,7 @@ export default {
     tabName: "Form Responses 1",
     sortColumn: "name",
     columns: [
-        { id: "timestamp", name: "Timestamp" },
+        { id: "timestamp", name: "Timestamp", hidden: true },
         { id: "name", name: "Name", filterable: true, filterBoxWidth: 200 },
         {
             id: "url",

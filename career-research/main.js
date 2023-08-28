@@ -104,6 +104,7 @@ class Table {
         // build header row:
         const headerRow = `<tr>
             ${this.columns
+                .filter((col) => !col.hidden)
                 .map((col) => col.getHeaderCell(config.sortColumn))
                 .join("\n")}
         </tr>`;
