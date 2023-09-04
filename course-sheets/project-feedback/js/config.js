@@ -6,7 +6,13 @@ export default {
     sortColumn: "presenter",
     columns: [
         { id: "timestamp", name: "Timestamp", hidden: true },
-        { id: "email", name: "Email", hidden: true },
+        {
+            id: "email",
+            name: "Email",
+            hidden: true,
+            filterable: true,
+            filterBoxWidth: 300,
+        },
         {
             id: "presenter",
             name: "Presenter",

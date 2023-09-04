@@ -49,16 +49,33 @@ export default class DataManager {
         });
         const data = await response.json();
         const rows = data.values;
-        console.log(rows);
         rows.shift();
         this.initColumnsAndRows(rows);
     }
 
-    initColumns() {
-        this.columns = this.config.columns.map(
-            (col, idx) => new Column(col, idx)
+    initColumns(data) {
+        if (this.config.columns) {
+            this.columns = this.config.columns.map(
+                (col, idx) => new Column(col, idx)
+            );
+        } else {
+            console.warn(
+                "Configuration warning: Configure columns in config.js file"
+            );
+            this.columns = [];
+            for (let i = 0; i < data[0].length; i++) {
+                const opts = {
+                    id: `col_${i + 1}`,
+                    name: `Column ${i + 1}`,
+                };
+                this.columns.push(new Column(opts, i));
+            }
+        }
+        this.columns.forEach(
+            ((col) => {
+                return (this.columnMap[col.id] = col);
+            }).bind(this)
         );
-        this.columns.forEach((col) => (this.columnMap[col.id] = col));
     }
 
     initRows(data) {
@@ -69,7 +86,7 @@ export default class DataManager {
     }
 
     initColumnsAndRows(data) {
-        this.initColumns();
+        this.initColumns(data);
         this.initRows(data);
         this.columns.forEach(
             ((col) => {
@@ -100,7 +117,14 @@ export default class DataManager {
     }
 
     sort(columnId) {
-        const col = this.getColumnById(columnId);
+        let col = this.getColumnById(columnId);
+        if (!col) {
+            console.error(
+                'Configuration error: "columnId" is not a valid column id.'
+            );
+            col = this.columns[0];
+            columnId = col.id;
+        }
         const multiplier = col.sortDirection === "desc" ? -1 : 1;
         const stringSorter = (a, b) => {
             const val1 = a[col.ordering].toLowerCase();
